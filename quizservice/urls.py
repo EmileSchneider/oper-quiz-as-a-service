@@ -5,6 +5,8 @@ from .views import *
 urlpatterns = [
     path('quiz/', QuizBrowseView.as_view(), name='browse-quiz'),
     path('quiz/<int:pk>', QuizUpdateDestroyView.as_view(), name='change-quiz'),
+    path('question/', QuestionBrowseView.as_view(), name='browse-question'),
+    path('question/<int:pk>', QuestionUpdateDestroyView.as_view(), name='change-question'),
     path('answer/', AnswerBrowseView.as_view(), name='browse-answer'),
     path('answer/<int:question>', AnswerBrowseView.as_view(), name='browse-answer'),
     path('answer/<int:pk>', AnswerUpdateDestroyView.as_view(), name='change-answer'),

@@ -12,6 +12,7 @@ from .serialisers import QuizSerialiser, DetailedQuizSerialiser, AnswerSerialise
 
 
 class QuizProgressView(APIView):
+    authentication_classes = [IsAuthenticated]
 
     def get(self, request, quizid):
         if Participant.is_participant(request.user):
@@ -26,6 +27,7 @@ class QuizProgressView(APIView):
 
 
 class ParticipationScoreView(APIView):
+    authentication_classes = [IsAuthenticated]
 
     def get(self, request, participationid):
         try:
@@ -40,6 +42,8 @@ class ParticipationScoreView(APIView):
 
 
 class ParticipationProgressView(APIView):
+    authentication_classes = [IsAuthenticated]
+
     def get(self, request, participationid):
         if Creator.is_creator(request.user):
             try:
@@ -53,6 +57,7 @@ class ParticipationProgressView(APIView):
 
 class QuizParticipantGiveAnswerView(APIView):
     queryset = Participation.objects.all()
+    authentication_classes = [IsAuthenticated]
 
     def post(self, request, quizid, questionid, answerid):
         participation = Participation.objects.get(quiz=quizid, user=request.user)
@@ -83,6 +88,7 @@ class QuizParticipantBrowseView(generics.ListAPIView):
     serializer_class = DetailedQuizSerialiser
     search_fields = ['name']
     filter_backends = (filters.SearchFilter,)
+    authentication_classes = [IsAuthenticated]
 
     def get_queryset(self):
         quizs = Participation.objects.filter(user=self.request.user).all().values('quiz')
@@ -93,22 +99,43 @@ class QuizBrowseView(generics.ListCreateAPIView):
     serializer_class = QuizSerialiser
     search_fields = ['name']
     filter_backends = (filters.SearchFilter,)
+    authentication_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Quiz.objects.filter(creator=self.request.user)
 
 
 class QuizUpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
+    authentication_classes = [IsAuthenticated]
+
     serializer_class = QuizSerialiser
 
     def get_queryset(self):
         return Quiz.objects.filter(creator=self.request.user)
 
 
+class QuestionUpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
+    serializer_class = QuestionSerialiser
+
+    def get_queryset(self):
+        return Question.objects.filter(quiz__creator=self.request.user)
+
+
+class QuestionBrowseView(generics.ListCreateAPIView):
+    serializer_class = QuestionSerialiser
+    search_fields = ['text']
+    filter_backends = (filters.SearchFilter,)
+    authentication_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Question.objects.filter(quiz__creator=self.request.user)
+
+
 class AnswerBrowseView(generics.ListCreateAPIView):
     serializer_class = AnswerSerialiser
     search_fields = ['text']
     filter_backends = (filters.SearchFilter,)
+    authentication_classes = [IsAuthenticated]
 
     def get_queryset(self):
         question = self.kwargs.get('question')
@@ -120,6 +147,7 @@ class AnswerBrowseView(generics.ListCreateAPIView):
 
 class AnswerUpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
     serializer_class = AnswerSerialiser
+    authentication_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # question = self.kwargs.get('question')
