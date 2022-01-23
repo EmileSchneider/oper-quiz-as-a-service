@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 from .models import Quiz, Answer, Question, Participation, QuizInvitations, Creator, Participant, AnswersGiven
 from .serialisers import QuizSerialiser, DetailedQuizSerialiser, AnswerSerialiser, QuestionSerialiser, \
-    ParticipationSerialiser
+    ParticipationSerialiser, AnswerGivenSerialiser
 
 
 class QuizProgressView(APIView):
@@ -156,3 +156,44 @@ class AnswerUpdateDestroyView(generics.UpdateAPIView, generics.DestroyAPIView):
         # else:
         #     return Answer.objects.filter(question__quiz__creator=self.request.user)
         return Answer.objects.filter(question__quiz__creator=self.request.user)
+
+
+import datetime
+
+
+class DailyReportView(APIView):
+    authentication_classes = [IsAuthenticated]
+
+    def get(self, request):
+        date = datetime.datetime.today()
+        year = date.year
+        month = date.month
+        day = date.day
+        if request.user.is_staff():
+            created_quizs = Quiz.objects.filter(created_at__year=year, created_at__month=month, created_at__day=day)
+            changed_quizs = Quiz.objects.filter(updated_at__year=year, updated_at__month=month, updated_at__day=day)
+
+            created_questions = Question.objects.filter(created_at__year=year, created_at__month=month,
+                                                        created_at__day=day)
+            changed_questions = Question.objects.filter(updated_at__year=year, updated_at__month=month,
+                                                        updated_at__day=day)
+
+            created_answers = Answer.objects.filter(created_at__year=year, created_at__month=month, created_at__day=day)
+            updated_answers = Answer.objects.filter(updated_at__year=year, updated_at__month=month, updated_at__day=day)
+
+            newly_given_answers = AnswersGiven.objects.filter(created_at__year=year, created_at__month=month,
+                                                              created_at__day=day)
+            updated_given_answers = AnswersGiven.objects.filter(updated_at__year=year, updated_at__month=month,
+                                                                updated_at__day=day)
+
+
+            return Response(data={
+                "created_quizs": QuizSerialiser(created_quizs, many=True),
+                "changed_quizs": QuizSerialiser(changed_quizs, many=True),
+                "created_questions": QuestionSerialiser(created_questions, many=True),
+                "changed_questions": QuestionSerialiser(changed_questions, many=True),
+                "created_answers": AnswerSerialiser(created_answers, many=True),
+                "changed_answers": AnswerSerialiser(updated_answers, many=True),
+                "created_given_answer": AnswerGivenSerialiser(newly_given_answers, many=True),
+                "changed_given_answer": AnswerGivenSerialiser(updated_given_answers, many=True)
+            })

@@ -12,7 +12,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class QuizSerialiser(serializers.ModelSerializer):
-
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -59,4 +58,10 @@ class DetailedQuestionSerialiser(serializers.ModelSerializer):
 class ParticipationSerialiser(serializers.ModelSerializer):
     class Meta:
         model = Participation
+        fields = '__all__'
+
+
+class AnswerGivenSerialiser(serializers.ModelSerializer):
+    class Meta:
+        model = AnswersGiven
         fields = '__all__'
