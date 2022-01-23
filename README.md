@@ -101,3 +101,10 @@ as a creator returns the score of a given participation (participation is a Part
 #### GET participations/<int:participationid>/progress
 
 as a creator returns the score of a given participation (participation is a Participant and a Quiz)
+
+
+# Daily Usage Report
+
+To download the usage report of today be authenticated as staff and 
+access 
+#### GET todaysussage/
