@@ -37,6 +37,8 @@ this deletes a quiz according to his id/private_key
 
 this updates a quiz matching the id. This is mainly to change the name of the quiz
 
+### Question
+
 #### GET question/
 
 returns a list of all the created questions belonging to quizzes the
@@ -54,6 +56,7 @@ deletes a question
 #### UPDATE question/<int:questionid>
 changes a questions selected by pk according to the payload
 
+### Answer
 
 #### GET answer/
 returns all the answers of all the questions belong to all the quizes one is the creator of
@@ -74,6 +77,8 @@ returns all the answers belong to a question
 
 #### UPDATE answer/<int:answerid>
 
+### Participating in a Quiz
+
 #### GET participate/quiz
 
 returns all the quizs one is invite to participate in
@@ -89,6 +94,9 @@ answers a particular question of a quiz with a chosen answer
 #### UPDATE participate/quiz/<int:quizid>/question/<int:questionid>/selectedanswer/<int:answerid>
 
 changes the answers of the question (selected by id) from the quiz to another answer
+
+
+### Progress
 
 #### GET progress/<int:quizid>
 
