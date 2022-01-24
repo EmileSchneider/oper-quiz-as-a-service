@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from .models import Creator, Participant, Question, Quiz, Participation, Answer, AnswersGiven
+from .models import Creator, Participant, Question, Quiz, Participation, Answer, AnswersGiven, QuizInvitations
 
 
 class TestQuizCreatorAPI(APITestCase):
@@ -283,3 +283,31 @@ class TestQuizParticipantApi(APITestCase):
         res = self.client.get(reverse('participation-progress', kwargs={'participationid': 1}))
         self.assertEqual(1, res.data['answered_questions'])
         self.assertEqual(3, res.data['all_questions'])
+
+    def test_get_daily_usage(self):
+        self.client.force_authenticate(self.participant_one)
+        self.client.post(reverse('participate-quiz', kwargs={'quizid': 1, 'questionid': 1, 'answerid': 1}))
+
+        self.client.force_authenticate(get_user_model().objects.create_superuser(
+            username='admin'
+        ))
+        res = self.client.get(reverse('dailyusage'))
+        print(res.data)
+
+    def test_sending_invite(self):
+        self.client.force_authenticate(self.creator_two)
+        self.client.post(reverse('invitation-send', kwargs={'email': 'testingparticipantone@mail.com', 'quizid': 3}))
+        self.assertEqual(1, len(QuizInvitations.objects.all()))
+
+    def test_accepting_invite(self):
+        self.client.force_authenticate(self.creator_two)
+        self.client.post(reverse('invitation-send', kwargs={'email': 'testingparticipantone@mail.com', 'quizid': 3}))
+
+        self.client.force_authenticate(self.participant_one)
+        res = self.client.get(reverse('invitation-accept'))
+        print(res.data)
+        res = self.client.get(reverse('my-quizs'))
+        print(res.data)
+        self.client.post(reverse('invitation-accept', kwargs={'invitationid': 1}))
+        res = self.client.get(reverse('my-quizs'))
+        print(res.data)

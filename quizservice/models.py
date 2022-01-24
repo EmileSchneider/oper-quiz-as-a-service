@@ -76,5 +76,9 @@ class QuizInvitations(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     email = models.EmailField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "email: " + str(self.email) + " " + str(self.quiz) + " " + str(self.accepted)

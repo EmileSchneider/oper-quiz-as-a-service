@@ -65,3 +65,12 @@ class AnswerGivenSerialiser(serializers.ModelSerializer):
     class Meta:
         model = AnswersGiven
         fields = '__all__'
+
+
+from .models import QuizInvitations
+
+
+class QuizInvitationsSerialiser(serializers.ModelSerializer):
+    class Meta:
+        model = QuizInvitations
+        fields = '__all__'

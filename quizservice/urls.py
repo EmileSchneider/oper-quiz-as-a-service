@@ -16,6 +16,9 @@ urlpatterns = [
     path('progress/<int:quizid>', QuizProgressView.as_view(), name='progress-quiz'),
     path('participations/<int:participationid>/score', ParticipationScoreView.as_view(), name='participation-score'),
     path('participations/<int:participationid>/progress', ParticipationProgressView.as_view(), name='participation-progress'),
-    path('todayssusage/', DailyReportView.as_view())
+    path('todayssusage/', DailyReportView.as_view(), name='dailyusage'),
+    path('invitations/new/<str:email>/<int:quizid>/', SendInvitationView.as_view(), name='invitation-send'),
+    path('invitations/', AcceptInvitationView.as_view(), name='invitation-accept'),
+    path('invitations/<int:invitationid>', AcceptInvitationView.as_view(), name='invitation-accept'),
 
 ]

@@ -169,7 +169,7 @@ class DailyReportView(APIView):
         year = date.year
         month = date.month
         day = date.day
-        if request.user.is_staff():
+        if request.user.is_staff:
             created_quizs = Quiz.objects.filter(created_at__year=year, created_at__month=month, created_at__day=day)
             changed_quizs = Quiz.objects.filter(updated_at__year=year, updated_at__month=month, updated_at__day=day)
 
@@ -186,14 +186,84 @@ class DailyReportView(APIView):
             updated_given_answers = AnswersGiven.objects.filter(updated_at__year=year, updated_at__month=month,
                                                                 updated_at__day=day)
 
-
             return Response(data={
-                "created_quizs": QuizSerialiser(created_quizs, many=True),
-                "changed_quizs": QuizSerialiser(changed_quizs, many=True),
-                "created_questions": QuestionSerialiser(created_questions, many=True),
-                "changed_questions": QuestionSerialiser(changed_questions, many=True),
-                "created_answers": AnswerSerialiser(created_answers, many=True),
-                "changed_answers": AnswerSerialiser(updated_answers, many=True),
-                "created_given_answer": AnswerGivenSerialiser(newly_given_answers, many=True),
-                "changed_given_answer": AnswerGivenSerialiser(updated_given_answers, many=True)
+                "created_quizs": QuizSerialiser(created_quizs, many=True).data,
+                "changed_quizs": QuizSerialiser(changed_quizs, many=True).data,
+                "created_questions": QuestionSerialiser(created_questions, many=True).data,
+                "changed_questions": QuestionSerialiser(changed_questions, many=True).data,
+                "created_answers": AnswerSerialiser(created_answers, many=True).data,
+                "changed_answers": AnswerSerialiser(updated_answers, many=True).data,
+                "created_given_answer": AnswerGivenSerialiser(newly_given_answers, many=True).data,
+                "changed_given_answer": AnswerGivenSerialiser(updated_given_answers, many=True).data
             })
+
+
+from django.core.mail import send_mail
+
+
+class SendInvitationView(APIView):
+
+    def __invite_over_email_to_setup_account__(self, email):
+        send_mail(
+            'You have been invited to participate in a quiz',
+            'Please register an account at our-website to participate in the quiz',
+            'thisemail@our-website.com',
+            [email],
+            fail_silently=False,
+        )
+
+    def __notify_user_new_quiz_inivitation__(self, user):
+        send_mail(
+            'You have been invited to participate in a quiz',
+            'you can accept the invitation on our website',
+            'thisemail@our-website.com',
+            [user.email],
+            fail_silently=False,
+        )
+
+    def post(self, request, email, quizid):
+        quiz = Quiz.objects.get(pk=quizid)
+        part = Participation.objects.filter(user__email=email, quiz=quiz)
+        if len(part) == 0:
+            # user already registered?
+            user = User.objects.filter(email=email)
+            if len(user) == 0:
+                self.__invite_over_email_to_setup_account__(email)
+                print(email)
+
+                QuizInvitations(email=email, quiz=quizid).save()
+                return Response({})
+
+            else:
+                user = user[0]
+                QuizInvitations(email=user.email, user=user, quiz=quiz).save()
+                self.__notify_user_new_quiz_inivitation__(user)
+            return Response({})
+
+        if len(part) == 1:
+            # already invited do nothing
+            return Response({})
+
+
+from .serialisers import QuizInvitationsSerialiser
+
+
+class AcceptInvitationView(generics.ListAPIView):
+    serializer_class = QuizInvitationsSerialiser
+
+    def get_queryset(self):
+        return QuizInvitations.objects.filter(email=self.request.user.email)
+
+    def post(self, request, invitationid):
+        user = request.user
+        try:
+            invite = QuizInvitations.objects.get(pk=invitationid)
+            if invite.accepted:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                invite.accepted = True
+                invite.save()
+                Participation(user=user, quiz=invite.quiz).save()
+                return Response(status=status.HTTP_200_OK)
+        except QuizInvitations.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
