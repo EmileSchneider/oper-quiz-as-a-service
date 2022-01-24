@@ -20,5 +20,6 @@ urlpatterns = [
     path('invitations/new/<str:email>/<int:quizid>/', SendInvitationView.as_view(), name='invitation-send'),
     path('invitations/', AcceptInvitationView.as_view(), name='invitation-accept'),
     path('invitations/<int:invitationid>', AcceptInvitationView.as_view(), name='invitation-accept'),
+    path('notify-results/<int:participationid>', NotifyResultsView.as_view())
 
 ]

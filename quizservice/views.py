@@ -267,3 +267,18 @@ class AcceptInvitationView(generics.ListAPIView):
                 return Response(status=status.HTTP_200_OK)
         except QuizInvitations.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class NotifyResultsView(APIView):
+
+    def post(self, request, participationid):
+        participation = Participation.objects.get(pk=participationid)
+        all_question = Question.objects.filter(quiz=participation.quiz)
+        correct_answers = AnswersGiven.objects.filter(participation=participation,
+                                                      selectedAnswer__isCorrect=True)
+        send_mail(
+            'Your quiz results',
+            f'In the quiz: {participation.quiz.name} you achieved: {len(correct_answers)} out of a total of {len(all_question)}',
+            'somemail@our-website.com',
+            [participation.user.email]
+        )

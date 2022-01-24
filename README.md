@@ -110,9 +110,26 @@ as a creator returns the score of a given participation (participation is a Part
 
 as a creator returns the score of a given participation (participation is a Participant and a Quiz)
 
+### POST invitations/new/<str:email>/<int:quizid>
+
+invite someone per email to a new quizs, will automatically invite unregistered emails to
+create an account
+
+### GET invitations/
+lists all the quizs a participant has been invited too
+
+### POST invitations/<int:invitationid>
+
+accept an invitation
+
+
+### POST notify-results/<int:participationid>'
+
+send an email to the quiz user of the participation with the results
 
 # Daily Usage Report
 
 To download the usage report of today be authenticated as staff and 
 access 
 #### GET todaysussage/
+
